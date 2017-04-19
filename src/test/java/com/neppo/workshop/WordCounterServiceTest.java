@@ -15,7 +15,6 @@ import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- *
  * Text files from http://www.textfiles.com/etext/
  */
 
@@ -35,15 +34,31 @@ public class WordCounterServiceTest {
         correctStats = new WordStatsNaive();
 
         lines.forEach(line -> {
-            String [] words = line.split(" ");
+            String[] words = line.split(" ");
             correctStats.incrementLineCount();
-            for (String word: words) {
+            for (String word : words) {
                 correctStats.incrementWordCount(word);
             }
         });
 
         System.out.println("Reference: " + WordStatsUtil.wordStatsToString(correctStats, 10));
         System.out.println("=============================================================================");
+    }
+
+    public static void testWordCounterInParallel(WordStats wordStats, List<String> lines) {
+
+        long init = System.currentTimeMillis();
+        lines.parallelStream().forEach(line -> {
+            String[] words = line.split(" ");
+            wordStats.incrementLineCount();
+            for (String word : words) {
+                wordStats.incrementWordCount(word);
+            }
+        });
+
+        System.out.println("WordStats = " + WordStatsUtil.wordStatsToString(wordStats, HISTOGRAM_LIMIT));
+        System.out.println("Time spent: " + (System.currentTimeMillis() - init));
+        System.out.println("==========================================================================");
     }
 
     @Test
@@ -100,23 +115,6 @@ public class WordCounterServiceTest {
         WordStats stats = new WordStatsConcurrent();
         testWordCounterInParallel(stats, lines);
         assertTrue("should match", WordStatsUtil.compareWorldStats(correctStats, stats));
-    }
-
-
-    public static void testWordCounterInParallel(WordStats wordStats, List<String> lines) {
-
-        long init = System.currentTimeMillis();
-        lines.parallelStream().forEach(line -> {
-            String [] words = line.split(" ");
-            wordStats.incrementLineCount();
-            for (String word: words) {
-                wordStats.incrementWordCount(word);
-            }
-        });
-
-        System.out.println("WordStats = " + WordStatsUtil.wordStatsToString(wordStats, HISTOGRAM_LIMIT));
-        System.out.println("Time spent: " + (System.currentTimeMillis() - init));
-        System.out.println("==========================================================================");
     }
 
 }

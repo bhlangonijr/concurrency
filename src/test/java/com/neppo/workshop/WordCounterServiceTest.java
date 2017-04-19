@@ -9,7 +9,9 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -21,6 +23,8 @@ import static org.junit.Assert.assertTrue;
 public class WordCounterServiceTest {
 
     final static Integer HISTOGRAM_LIMIT = 10;
+    final static Integer REPEAT_TESTS = 10;
+
     final static String BOOK_NAME = "install.log";
 
     static List<String> lines;
@@ -45,76 +49,70 @@ public class WordCounterServiceTest {
         System.out.println("=============================================================================");
     }
 
-    public static void testWordCounterInParallel(WordStats wordStats, List<String> lines) {
+    public static void testWordCounterInParallel(Supplier<WordStats> wordStatsSupplier, List<String> lines, Integer repeat, Boolean shouldMatch) {
 
         long init = System.currentTimeMillis();
-        lines.parallelStream().forEach(line -> {
-            String[] words = line.split(" ");
-            wordStats.incrementLineCount();
-            for (String word : words) {
-                wordStats.incrementWordCount(word);
+        IntStream.rangeClosed(1, repeat).forEach( i -> {
+            WordStats wordStats = wordStatsSupplier.get();
+            lines.parallelStream().forEach(line -> {
+                String[] words = line.split(" ");
+                wordStats.incrementLineCount();
+                for (String word : words) {
+                    wordStats.incrementWordCount(word);
+                }
+            });
+            System.out.println("WordStats = " + WordStatsUtil.wordStatsToString(wordStats, HISTOGRAM_LIMIT));
+            if (shouldMatch) {
+                assertTrue("should match", WordStatsUtil.compareWordStats(correctStats, wordStats));
+            } else {
+                assertFalse("should not match", WordStatsUtil.compareWordStats(correctStats, wordStats));
             }
         });
-
-        System.out.println("WordStats = " + WordStatsUtil.wordStatsToString(wordStats, HISTOGRAM_LIMIT));
-        System.out.println("Time spent: " + (System.currentTimeMillis() - init));
+        System.out.println("Time spent (avg): " + (System.currentTimeMillis() - init)/repeat);
         System.out.println("==========================================================================");
     }
 
     @Test
     public void testNaiveAndAsync() throws IOException {
 
-        WordStats stats = new WordStatsNaive();
-        testWordCounterInParallel(stats, lines);
-        assertFalse("should not match", WordStatsUtil.compareWordStats(correctStats, stats));
+        testWordCounterInParallel(WordStatsNaive::new, lines, REPEAT_TESTS, false);
     }
 
     @Test
     public void testNaive2AndAsync() throws IOException {
 
-        WordStats stats = new WordStatsNaive2();
-        testWordCounterInParallel(stats, lines);
-        assertFalse("should not match", WordStatsUtil.compareWordStats(correctStats, stats));
+        testWordCounterInParallel(WordStatsNaive2::new, lines, REPEAT_TESTS, false);
     }
 
     @Test
     public void testWithLockingAndAsync() throws IOException {
 
-        WordStats stats = new WordStatsWithLocking();
-        testWordCounterInParallel(stats, lines);
-        assertTrue("should match", WordStatsUtil.compareWordStats(correctStats, stats));
+        testWordCounterInParallel(WordStatsWithLocking::new, lines, REPEAT_TESTS, true);
+
     }
 
     @Test
     public void testSyncBlocksAndAsync() throws IOException {
 
-        WordStats stats = new WordStatsSyncBlock();
-        testWordCounterInParallel(stats, lines);
-        assertTrue("should match", WordStatsUtil.compareWordStats(correctStats, stats));
+        testWordCounterInParallel(WordStatsSyncBlock::new, lines, REPEAT_TESTS, true);
     }
 
     @Test
     public void testSyncMethodAndAsync() throws IOException {
 
-        WordStats stats = new WordStatsSyncMethod();
-        testWordCounterInParallel(stats, lines);
-        assertTrue("should match", WordStatsUtil.compareWordStats(correctStats, stats));
+        testWordCounterInParallel(WordStatsSyncMethod::new, lines, REPEAT_TESTS, true);
     }
 
     @Test
     public void testAlmostRightAndAsync() throws IOException {
 
-        WordStats stats = new WordStatsAlmostRight();
-        testWordCounterInParallel(stats, lines);
-        assertTrue("should match", WordStatsUtil.compareWordStats(correctStats, stats));
+        testWordCounterInParallel(WordStatsAlmostRight::new, lines, REPEAT_TESTS, true);
     }
 
     @Test
     public void testConcurrentAndAsync() throws IOException {
 
-        WordStats stats = new WordStatsConcurrent();
-        testWordCounterInParallel(stats, lines);
-        assertTrue("should match", WordStatsUtil.compareWordStats(correctStats, stats));
+        testWordCounterInParallel(WordStatsConcurrent::new, lines, REPEAT_TESTS, true);
     }
 
 }

@@ -37,8 +37,13 @@ public class WordStatsAlmostRight implements WordStats {
     public void incrementWordCount(String word) {
 
         words.incrementAndGet();
-        histogram.computeIfAbsent(word, k -> 1);
-        histogram.computeIfPresent(word, (k, v) -> v + 1);
+        Integer counter = histogram.get(word);
+        if (counter == null) {
+            counter = 1;
+        } else {
+            counter++;
+        }
+        histogram.put(word, counter);
     }
 
     @Override

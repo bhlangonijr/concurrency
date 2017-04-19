@@ -29,7 +29,7 @@ public class WordStatsUtil {
                 '}';
     }
 
-    public static boolean compareWorldStats(WordStats o1, WordStats o2) {
+    public static boolean compareWordStats(WordStats o1, WordStats o2) {
 
         return Objects.equals(o1.numberOfLines(), o2.numberOfLines()) &&
                 Objects.equals(o1.numberOfWords(), o2.numberOfWords()) &&

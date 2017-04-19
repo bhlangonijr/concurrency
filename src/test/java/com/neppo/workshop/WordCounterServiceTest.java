@@ -66,7 +66,7 @@ public class WordCounterServiceTest {
 
         WordStats stats = new WordStatsNaive();
         testWordCounterInParallel(stats, lines);
-        assertFalse("should not match", WordStatsUtil.compareWorldStats(correctStats, stats));
+        assertFalse("should not match", WordStatsUtil.compareWordStats(correctStats, stats));
     }
 
     @Test
@@ -74,7 +74,7 @@ public class WordCounterServiceTest {
 
         WordStats stats = new WordStatsNaive2();
         testWordCounterInParallel(stats, lines);
-        assertFalse("should not match", WordStatsUtil.compareWorldStats(correctStats, stats));
+        assertFalse("should not match", WordStatsUtil.compareWordStats(correctStats, stats));
     }
 
     @Test
@@ -82,7 +82,7 @@ public class WordCounterServiceTest {
 
         WordStats stats = new WordStatsWithLocking();
         testWordCounterInParallel(stats, lines);
-        assertTrue("should match", WordStatsUtil.compareWorldStats(correctStats, stats));
+        assertTrue("should match", WordStatsUtil.compareWordStats(correctStats, stats));
     }
 
     @Test
@@ -90,7 +90,7 @@ public class WordCounterServiceTest {
 
         WordStats stats = new WordStatsSyncBlock();
         testWordCounterInParallel(stats, lines);
-        assertTrue("should match", WordStatsUtil.compareWorldStats(correctStats, stats));
+        assertTrue("should match", WordStatsUtil.compareWordStats(correctStats, stats));
     }
 
     @Test
@@ -98,7 +98,7 @@ public class WordCounterServiceTest {
 
         WordStats stats = new WordStatsSyncMethod();
         testWordCounterInParallel(stats, lines);
-        assertTrue("should match", WordStatsUtil.compareWorldStats(correctStats, stats));
+        assertTrue("should match", WordStatsUtil.compareWordStats(correctStats, stats));
     }
 
     @Test
@@ -106,7 +106,7 @@ public class WordCounterServiceTest {
 
         WordStats stats = new WordStatsAlmostRight();
         testWordCounterInParallel(stats, lines);
-        assertTrue("should match", WordStatsUtil.compareWorldStats(correctStats, stats));
+        assertTrue("should match", WordStatsUtil.compareWordStats(correctStats, stats));
     }
 
     @Test
@@ -114,7 +114,7 @@ public class WordCounterServiceTest {
 
         WordStats stats = new WordStatsConcurrent();
         testWordCounterInParallel(stats, lines);
-        assertTrue("should match", WordStatsUtil.compareWorldStats(correctStats, stats));
+        assertTrue("should match", WordStatsUtil.compareWordStats(correctStats, stats));
     }
 
 }
